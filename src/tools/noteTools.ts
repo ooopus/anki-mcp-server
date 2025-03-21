@@ -1,7 +1,7 @@
 /**
- * Note tool handlers
+ * Handles note-related operations and validations
  */
-import { INoteService } from "../interfaces/services.js";
+import { INoteService, IModelService } from "../interfaces/services.js";
 import {
 	CreateNoteArgs,
 	BatchCreateNotesArgs,
@@ -17,17 +17,18 @@ import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
  */
 export class NoteTools {
 	/**
-	 * Constructor
-	 *
-	 * @param noteService Note service
+	 * @param noteService - Service for note operations
+	 * @param modelService - Service for model information retrieval
 	 */
-	constructor(private noteService: INoteService) {}
+	constructor(
+		private noteService: INoteService,
+		private modelService: IModelService,
+	) {}
 
 	/**
-	 * Create a new note
-	 *
-	 * @param args Note creation arguments
-	 * @returns Promise resolving to tool response with creation result
+	 * Create a new note with validation and field mapping
+	 * @param args - Note creation parameters including type, deck, and fields
+	 * @returns Object containing creation result
 	 */
 	async createNote(args: CreateNoteArgs) {
 		if (!args) {
@@ -42,6 +43,34 @@ export class NoteTools {
 			throw new McpError(ErrorCode.InvalidParams, "Deck name is required");
 		}
 
+		// Retrieve model information for validation
+		const modelInfo = await this.modelService.getNoteTypeInfo(args.type);
+
+		if (!args.fields) {
+			args.fields = {};
+		}
+
+		// Map legacy fields (front/back) to actual field names
+		if (args.front && modelInfo.fields.length > 0) {
+			args.fields[modelInfo.fields[0]] = args.front;
+		}
+
+		if (args.back && modelInfo.fields.length > 1) {
+			args.fields[modelInfo.fields[1]] = args.back;
+		}
+
+		const requiredFields = new Set(modelInfo.fields);
+		const providedFields = new Set(Object.keys(args.fields));
+
+		if (Object.keys(args.fields).length === 0) {
+			throw new McpError(
+				ErrorCode.InvalidParams,
+				`No fields provided. Required fields for '${args.type}' type: ${[
+					...requiredFields,
+				].join(", ")}`,
+			);
+		}
+
 		const noteId = await this.noteService.createNote(args);
 		return {
 			content: [
@@ -54,10 +83,9 @@ export class NoteTools {
 	}
 
 	/**
-	 * Create multiple notes
-	 *
-	 * @param args Batch note creation arguments
-	 * @returns Promise resolving to tool response with creation results
+	 * Batch create notes with error handling
+	 * @param args - Contains array of notes and error handling strategy
+	 * @returns Formatted batch operation results
 	 */
 	async batchCreateNotes(args: BatchCreateNotesArgs) {
 		if (!args || !args.notes || !Array.isArray(args.notes)) {
@@ -79,10 +107,9 @@ export class NoteTools {
 	}
 
 	/**
-	 * Search for notes
-	 *
-	 * @param args Search arguments
-	 * @returns Promise resolving to tool response with search results
+	 * Search notes using Anki's query syntax
+	 * @param args - Contains search query string
+	 * @returns Array of matching note IDs
 	 */
 	async searchNotes(args: SearchNotesArgs) {
 		if (!args || !args.query) {
@@ -101,10 +128,9 @@ export class NoteTools {
 	}
 
 	/**
-	 * Get note information
-	 *
-	 * @param args Note info arguments
-	 * @returns Promise resolving to tool response with note information
+	 * Retrieve detailed note information
+	 * @param args - Contains target note ID
+	 * @returns Structured note data including fields and cards
 	 */
 	async getNoteInfo(args: GetNoteInfoArgs) {
 		if (!args || typeof args.noteId !== "number") {
@@ -123,10 +149,9 @@ export class NoteTools {
 	}
 
 	/**
-	 * Update a note
-	 *
-	 * @param args Note update arguments
-	 * @returns Promise resolving to tool response with update result
+	 * Update existing note fields and tags
+	 * @param args - Contains note ID and update data
+	 * @returns Update confirmation
 	 */
 	async updateNote(args: UpdateNoteArgs) {
 		if (!args || typeof args.id !== "number") {
@@ -152,10 +177,9 @@ export class NoteTools {
 	}
 
 	/**
-	 * Delete a note
-	 *
-	 * @param args Note deletion arguments
-	 * @returns Promise resolving to tool response with deletion result
+	 * Permanently delete a note
+	 * @param args - Contains target note ID
+	 * @returns Deletion confirmation
 	 */
 	async deleteNote(args: DeleteNoteArgs) {
 		if (!args || typeof args.noteId !== "number") {

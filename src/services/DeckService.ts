@@ -24,6 +24,27 @@ export class DeckService implements IDeckService {
 	) {}
 
 	/**
+	 * Get the current deck
+	 *
+	 * 获取当前选中的牌组
+	 *
+	 * @returns Promise resolving to the current deck name
+	 */
+	async getCurrentDeck(): Promise<string> {
+		try {
+			// 使用guiCurrentDeck获取当前选中的牌组
+			const deckName =
+				await this.ankiConnectService.invoke<string>("guiCurrentDeck");
+			return deckName || "Default";
+		} catch (error) {
+			throw new McpError(
+				ErrorCode.InternalError,
+				"获取当前牌组失败，请确保Anki已打开并选中牌组",
+			);
+		}
+	}
+
+	/**
 	 * List all decks
 	 *
 	 * 获取所有牌组列表

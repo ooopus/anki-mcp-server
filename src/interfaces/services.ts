@@ -110,6 +110,11 @@ export interface IDeckService {
 	 * Check if a deck exists
 	 */
 	deckExists(name: string): Promise<boolean>;
+
+	/**
+	 * Get the current deck
+	 */
+	getCurrentDeck(): Promise<string>;
 }
 
 /**
