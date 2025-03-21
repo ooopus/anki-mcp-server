@@ -77,6 +77,10 @@ interface CreateNoteTypeArgs {
 	}[];
 }
 
+interface GetNoteTypeInfoArgs {
+	modelName: string;
+}
+
 // Types for Anki operations
 interface AnkiRequest {
 	action: string;
@@ -338,7 +342,10 @@ class AnkiServer {
 				? { front: "Front", back: "Back" }
 				: { front: "Text", back: "Back Extra" };
 		} else {
-			return { front: "正面", back: "背面" };
+			// Chinese field names
+			return type === "Basic"
+				? { front: "正面", back: "背面" }
+				: { front: "文字", back: "额外的" };
 		}
 	}
 
@@ -587,6 +594,20 @@ class AnkiServer {
 						required: ["name", "fields", "templates"],
 					},
 				},
+				{
+					name: "get_note_type_info",
+					description: "Get detailed structure of a note type",
+					inputSchema: {
+						type: "object",
+						properties: {
+							modelName: {
+								type: "string",
+								description: "Name of the note type/model",
+							},
+						},
+						required: ["modelName"],
+					},
+				},
 			],
 		}));
 
@@ -719,13 +740,13 @@ class AnkiServer {
 									noteData.fields ||
 									(noteData.type === "Basic"
 										? {
-												[fieldNames.front]: noteData.front,
-												[fieldNames.back]: noteData.back,
-										  }
+											[fieldNames.front]: noteData.front,
+											[fieldNames.back]: noteData.back,
+										}
 										: {
-												[fieldNames.front]: noteData.text,
-												[fieldNames.back]: noteData.backExtra || "",
-										  }),
+											[fieldNames.front]: noteData.text,
+											[fieldNames.back]: noteData.backExtra || "",
+										}),
 								tags: noteData.tags || [],
 							};
 
@@ -859,6 +880,37 @@ class AnkiServer {
 							{
 								type: "text",
 								text: `Created note type: ${name}`,
+							},
+						],
+					};
+				}
+
+				case "get_note_type_info": {
+					const args = validateArgs<GetNoteTypeInfoArgs>(
+						request.params.arguments,
+						["modelName"],
+					);
+
+					const [fields, templates, styling] = await Promise.all([
+						this.invokeAnki("modelFieldNames", { modelName: args.modelName }),
+						this.invokeAnki("modelTemplates", { modelName: args.modelName }),
+						this.invokeAnki("modelStyling", { modelName: args.modelName }),
+					]);
+
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(
+									{
+										modelName: args.modelName,
+										fields,
+										templates,
+										styling,
+									},
+									null,
+									2,
+								),
 							},
 						],
 					};
