@@ -36,7 +36,7 @@ A Model Context Protocol (MCP) server that enables LLMs to interact with Anki fl
 
 ```bash
 # Run directly with npx (no installation required)
-npx anki-mcp-server
+npx -y anki-mcp-server
 ```
 
 ### Option 2: From npm
@@ -64,7 +64,7 @@ Add to your Claude configuration file:
   "mcpServers": {
     "anki": {
       "command": "npx",
-      "args": ["anki-mcp-server"]
+      "args": ["--yes","anki-mcp-server"]
     }
   }
 }
