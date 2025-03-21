@@ -26,7 +26,7 @@ Add to your Claude configuration file:
   "mcpServers": {
     "anki": {
       "command": "npx",
-      "args": ["anki-mcp-server"]
+      "args": ["--yes", "anki-mcp-server"]
     }
   }
 }
