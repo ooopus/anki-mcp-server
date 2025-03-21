@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.7.0",
-    "axios": "^1.7.9",
+    "axios": "^1.7.9"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
@@ -56,5 +56,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
+  }
 }
