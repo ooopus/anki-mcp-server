@@ -1,11 +1,7 @@
 /**
  * Note service implementation
  */
-import {
-	INoteService,
-	IAnkiConnectService,
-	ILanguageService,
-} from "../interfaces/services.js";
+import { INoteService, IAnkiConnectService } from "../interfaces/services.js";
 import {
 	NoteParams,
 	NoteUpdateParams,
@@ -22,12 +18,8 @@ export class NoteService implements INoteService {
 	 * Constructor
 	 *
 	 * @param ankiConnectService AnkiConnect service
-	 * @param languageService Language service
 	 */
-	constructor(
-		private ankiConnectService: IAnkiConnectService,
-		private languageService: ILanguageService,
-	) {}
+	constructor(private ankiConnectService: IAnkiConnectService) {}
 
 	/**
 	 * Create a new note
@@ -39,57 +31,18 @@ export class NoteService implements INoteService {
 	 */
 	async createNote(params: NoteParams): Promise<number> {
 		const { type, deck, tags } = params;
-		const modelName = this.languageService.getModelName(type);
-		const fieldNames = this.languageService.getFieldNames(type);
 
 		let fields: Record<string, string>;
 
 		if (params.fields) {
 			// Use provided fields directly
 			fields = params.fields;
-		} else if (type === "Basic") {
-			// Basic note with front/back
-			if (!("front" in params) || !("back" in params)) {
-				throw new McpError(
-					ErrorCode.InvalidParams,
-					"Basic notes require front and back content",
-				);
-			}
-			if (!params.front || !params.back) {
-				throw new McpError(
-					ErrorCode.InvalidParams,
-					"Basic notes require front and back content",
-				);
-			}
-			fields = {
-				[fieldNames.front]: params.front,
-				[fieldNames.back]: params.back,
-			};
-		} else if (type === "Cloze") {
-			// Cloze note with text
-			if (!("text" in params)) {
-				throw new McpError(
-					ErrorCode.InvalidParams,
-					"Cloze notes require text content",
-				);
-			}
-			if (!params.text) {
-				throw new McpError(
-					ErrorCode.InvalidParams,
-					"Cloze notes require text content",
-				);
-			}
-			fields = {
-				[fieldNames.front]: params.text,
-				[fieldNames.back]: params.backExtra || "",
-			};
 		} else {
 			throw new McpError(ErrorCode.InvalidParams, "Invalid note type");
 		}
 
 		const note = {
 			deckName: deck,
-			modelName,
 			fields,
 			tags: tags || [],
 		};

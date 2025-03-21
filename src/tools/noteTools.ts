@@ -43,14 +43,24 @@ export class NoteTools {
 			throw new McpError(ErrorCode.InvalidParams, "Deck name is required");
 		}
 
-		// Retrieve model information for validation
+		// Retrieve model information and validate fields
 		const modelInfo = await this.modelService.getNoteTypeInfo(args.type);
 
-		if (!args.fields) {
-			args.fields = {};
+		// Ensure fields object exists
+		args.fields = args.fields || {};
+
+		// Validate required fields using modelInfo fields directly
+		const missingFields = modelInfo.fields.filter((f) => !(f in args.fields!));
+		if (missingFields.length > 0) {
+			throw new McpError(
+				ErrorCode.InvalidParams,
+				`Missing required fields for '${args.type}': ${missingFields.join(
+					", ",
+				)}`,
+			);
 		}
 
-		// Map legacy fields (front/back) to actual field names
+		// Map legacy fields (front/back) if provided
 		if (args.front && modelInfo.fields.length > 0) {
 			args.fields[modelInfo.fields[0]] = args.front;
 		}
@@ -58,16 +68,14 @@ export class NoteTools {
 		if (args.back && modelInfo.fields.length > 1) {
 			args.fields[modelInfo.fields[1]] = args.back;
 		}
-
-		const requiredFields = new Set(modelInfo.fields);
 		const providedFields = new Set(Object.keys(args.fields));
 
 		if (Object.keys(args.fields).length === 0) {
 			throw new McpError(
 				ErrorCode.InvalidParams,
-				`No fields provided. Required fields for '${args.type}' type: ${[
-					...requiredFields,
-				].join(", ")}`,
+				`No fields provided. Required fields for '${
+					args.type
+				}' type: ${modelInfo.fields.join(", ")}`,
 			);
 		}
 

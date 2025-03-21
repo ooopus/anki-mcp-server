@@ -1,12 +1,8 @@
 /**
  * Model service implementation
  */
-import {
-	IModelService,
-	IAnkiConnectService,
-	ILanguageService,
-} from "../interfaces/services.js";
-import { NoteTypeParams, NoteTypeInfo } from "../interfaces/types.js";
+import { IAnkiConnectService, IModelService } from "../interfaces/services.js";
+import { NoteTypeInfo, NoteTypeParams } from "../interfaces/types.js";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 
 /**
@@ -17,12 +13,8 @@ export class ModelService implements IModelService {
 	 * Constructor
 	 *
 	 * @param ankiConnectService AnkiConnect service
-	 * @param languageService Language service
 	 */
-	constructor(
-		private ankiConnectService: IAnkiConnectService,
-		private languageService: ILanguageService,
-	) {}
+	constructor(private ankiConnectService: IAnkiConnectService) {}
 
 	/**
 	 * List all note types
