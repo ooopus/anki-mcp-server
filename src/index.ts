@@ -1,17 +1,15 @@
 #!/usr/bin/env node
-import { ConfigService } from "./services/ConfigService.js";
-import { AnkiMcpServer } from "./server/AnkiMcpServer.js";
-
 /**
  * Main entry point for the Anki MCP Server
- *
+ */
+import { AnkiMcpServer } from "./ankiMcpServer.js";
+
+/**
+ * Main function
  */
 async function main() {
 	try {
-		const configService = new ConfigService();
-
-		const server = new AnkiMcpServer(configService);
-
+		const server = new AnkiMcpServer();
 		await server.run();
 	} catch (error) {
 		console.error("Failed to start Anki MCP Server:", error);

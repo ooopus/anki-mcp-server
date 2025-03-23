@@ -13,6 +13,7 @@
     "prepare": "husky",
     "prebuild": "node -p \"'export const MCP_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/_version.ts",
     "build": "tsc",
+    "build:force": "tsc --skipLibCheck --noEmitOnError false",
     "watch": "tsc --watch",
     "format": "biome format . --write",
     "lint": "biome lint .",
@@ -31,7 +32,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.7.0",
-    "axios": "1.8.4"
+    "axios": "1.8.4",
+    "yanki-connect": "2.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.5.3",
@@ -43,6 +45,7 @@
     "jest": "29.7.0",
     "lint-staged": "^15.5.0",
     "ts-jest": "29.2.6",
+    "ts-node": "^10.9.2",
     "typescript": "5.8.2"
   },
   "main": "build/index.js",
