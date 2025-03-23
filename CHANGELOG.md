@@ -40,3 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Resources `anki://decks/all`, `anki://note-types/{modelName}` etc 
 - Support for detect card type fields before create card
 
+### Changed
+
+- Build base on  `yanki-connect` now 
