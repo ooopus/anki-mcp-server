@@ -4,16 +4,15 @@
   "description": "A Model Context Protocol (MCP) server that enables LLMs to interact with Anki flashcard software through AnkiConnect",
   "type": "module",
   "bin": {
-    "anki-mcp-server": "build/index.js"
+    "anki-mcp-server": "dist/index.js"
   },
   "files": [
-    "build"
+    "dist"
   ],
   "scripts": {
     "prepare": "husky",
     "prebuild": "node -p \"'export const MCP_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/_version.ts",
     "build": "tsc",
-    "build:force": "tsc --skipLibCheck --noEmitOnError false",
     "watch": "tsc --watch",
     "format": "biome format . --write",
     "lint": "biome lint .",
