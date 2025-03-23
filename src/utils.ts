@@ -2,7 +2,7 @@
  * Utility functions and anti-corruption layer for yanki-connect
  */
 import { YankiConnect } from "yanki-connect";
-import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types";
 
 /**
  * Custom error types for Anki operations

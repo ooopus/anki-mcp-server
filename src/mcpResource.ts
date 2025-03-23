@@ -1,8 +1,8 @@
 /**
  * MCP Resource handlers for Anki
  */
-import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { AnkiClient } from "./utils.js";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types";
+import { AnkiClient } from "./utils";
 
 /**
  * Handles all MCP resource operations for Anki

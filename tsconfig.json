@@ -7,8 +7,7 @@
         "esModuleInterop": true,
         "allowJs": true,
         "strict": true,
-            "allowSyntheticDefaultImports": true,
-
+        "allowSyntheticDefaultImports": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "outDir": "build",
