@@ -1,22 +1,19 @@
 {
+    "extends": "./tsconfig.base",
     "compilerOptions": {
         "target": "ES2020",
-        "moduleResolution": "node",
+        "moduleResolution": "Node16",
         "resolveJsonModule": true,
         "esModuleInterop": true,
+        "isolatedModules": true,
         "strict": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "outDir": "dist",
         "rootDir": "src",
         "declaration": true,
+        "allowJs": true,
         "declarationDir": "dist/types",
-        "baseUrl": ".",
-        "paths": {
-            "@/*": [
-                "src/*"
-            ]
-        }
     },
     "include": [
         "src/**/*"

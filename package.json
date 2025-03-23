@@ -12,8 +12,8 @@
   "scripts": {
     "prepare": "husky",
     "prebuild": "node -p \"'export const MCP_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/_version.ts",
-    "build": "tsc",
-    "watch": "tsc --watch",
+    "build": "tsup",
+    "watch": "tsup --watch",
     "format": "biome format . --write",
     "lint": "biome lint .",
     "check": "biome check --apply .",
@@ -45,6 +45,7 @@
     "lint-staged": "^15.5.0",
     "ts-jest": "29.2.6",
     "ts-node": "^10.9.2",
+    "tsup": "8.4.0",
     "typescript": "5.8.2"
   },
   "main": "build/index.js",

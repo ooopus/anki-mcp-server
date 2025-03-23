@@ -1,8 +1,8 @@
 /**
  * MCP Resource handlers for Anki
  */
-import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types";
-import { AnkiClient } from "./utils";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { AnkiClient } from "./utils.js";
 
 /**
  * Handles all MCP resource operations for Anki
@@ -37,12 +37,6 @@ export class McpResourceHandler {
 
 		return {
 			resources: [
-				{
-					uri: "anki://decks/current",
-					name: "Current Deck",
-					description: "Information about the currently selected deck",
-					mimeType: "application/json",
-				},
 				{
 					uri: "anki://decks/all",
 					name: "All Decks",
@@ -88,12 +82,6 @@ export class McpResourceHandler {
 					mimeType: "application/json",
 				},
 				{
-					uriTemplate: "anki://decks/current",
-					name: "Current Deck",
-					description: "Currently active deck in Anki",
-					mimeType: "application/json",
-				},
-				{
 					uriTemplate: "anki://decks/all",
 					name: "All Decks",
 					description: "Complete list of available decks",
@@ -114,27 +102,6 @@ export class McpResourceHandler {
 		}[];
 	}> {
 		await this.ankiClient.checkConnection();
-
-		if (uri === "anki://decks/current") {
-			const currentDeck = await this.ankiClient.getCurrentDeck();
-			return {
-				contents: [
-					{
-						uri,
-						mimeType: "application/json",
-						text: JSON.stringify(
-							{
-								name: currentDeck,
-								uri: `anki://decks/current`,
-							},
-							null,
-							2,
-						),
-					},
-				],
-			};
-		}
-
 		if (uri === "anki://decks/all") {
 			const decks = await this.ankiClient.getDeckNames();
 			return {

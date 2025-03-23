@@ -2,7 +2,7 @@
  * Utility functions and anti-corruption layer for yanki-connect
  */
 import { YankiConnect } from "yanki-connect";
-import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 
 /**
  * Custom error types for Anki operations
@@ -204,23 +204,6 @@ export class AnkiClient {
 			);
 			// Convert to number if needed
 			return typeof result === "number" ? result : 0;
-		} catch (error) {
-			throw this.wrapError(
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	/**
-	 * Get the current deck
-	 */
-	async getCurrentDeck(): Promise<string> {
-		try {
-			const result = await this.executeWithRetry(() =>
-				// @ts-ignore - yanki-connect type definitions are incomplete
-				this.client.invoke("guiCurrentDeck"),
-			);
-			return String(result);
 		} catch (error) {
 			throw this.wrapError(
 				error instanceof Error ? error : new Error(String(error)),

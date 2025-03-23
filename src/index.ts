@@ -2,7 +2,7 @@
 /**
  * Main entry point for the Anki MCP Server
  */
-import { AnkiMcpServer } from "./ankiMcpServer";
+import { AnkiMcpServer } from "./ankiMcpServer.js";
 
 /**
  * Main function

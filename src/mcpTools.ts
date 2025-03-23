@@ -1,8 +1,8 @@
 /**
  * MCP Tool handlers for Anki
  */
-import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types";
-import { AnkiClient } from "./utils";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { AnkiClient } from "./utils.js";
 
 /**
  * Handles all MCP tool operations for Anki
@@ -66,13 +66,12 @@ export class McpToolHandler {
 				{
 					name: "create_note",
 					description:
-						"Create a new note (supports Basic/Cloze types and custom fields)",
+						"Create a new note (LLM Should get note type info first)",
 					inputSchema: {
 						type: "object",
 						properties: {
 							type: {
 								type: "string",
-								enum: ["Basic", "Cloze"],
 								description: "Note type",
 							},
 							deck: {
@@ -81,7 +80,8 @@ export class McpToolHandler {
 							},
 							fields: {
 								type: "object",
-								description: "Custom fields for the note",
+								description:
+									"Custom fields for the note(get note type info first)",
 								additionalProperties: true,
 							},
 							tags: {

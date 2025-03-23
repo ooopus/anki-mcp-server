@@ -1,8 +1,8 @@
 /**
  * Anki MCP Server implementation
  */
-import { Server } from "@modelcontextprotocol/sdk/server/index";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
 	CallToolRequestSchema,
 	ErrorCode,
