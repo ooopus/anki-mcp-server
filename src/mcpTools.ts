@@ -701,8 +701,17 @@ export class McpToolHandler {
 			text: string;
 		}[];
 	}> {
-		if (!args.notes || !Array.isArray(args.notes) || args.notes.length === 0) {
-			throw new McpError(ErrorCode.InvalidParams, "Notes array is required");
+		// Refined initial validation checks
+		if (typeof args !== 'object' || args === null) {
+			throw new McpError(ErrorCode.InvalidParams, "Invalid arguments: Input must be a JSON object.");
+		}
+
+		if (!args.notes || !Array.isArray(args.notes)) {
+			throw new McpError(ErrorCode.InvalidParams, "Invalid arguments: 'notes' property must be an array.");
+		}
+
+		if (args.notes.length === 0) {
+			throw new McpError(ErrorCode.InvalidParams, "Invalid arguments: 'notes' array cannot be empty.");
 		}
 
 		const results: {
@@ -718,26 +727,62 @@ export class McpToolHandler {
 		for (let i = 0; i < args.notes.length; i++) {
 			const note = args.notes[i];
 			try {
-				// Check if deck exists, create if not
+				// **NEW VALIDATION STARTS HERE**
+				if (typeof note !== 'object' || note === null) {
+					throw new Error(`Note at index ${i} must be an object.`);
+				}
+				if (!note.type || typeof note.type !== 'string' || note.type.trim() === "") {
+					throw new Error(`Invalid note at index ${i}: 'type' must be a non-empty string.`);
+				}
+				if (!note.deck || typeof note.deck !== 'string' || note.deck.trim() === "") {
+					throw new Error(`Invalid note at index ${i}: 'deck' must be a non-empty string.`);
+				}
+				if (typeof note.fields !== 'object' || note.fields === null) {
+					throw new Error(`Invalid note at index ${i}: 'fields' must be an object.`);
+				}
+				if (note.tags !== undefined) { // only validate if tags is present
+					if (!Array.isArray(note.tags)) {
+						throw new Error(`Invalid note at index ${i}: 'tags' must be an array if provided.`);
+					}
+					if (!note.tags.every(tag => typeof tag === 'string')) {
+						throw new Error(`Invalid note at index ${i}: All 'tags' must be strings.`);
+					}
+				}
+
+				// Check if model exists (also serves as validation for note.type)
+				const models = await this.ankiClient.getModelNames();
+				if (!models.includes(note.type)) {
+					// This error message is slightly different from the suggested one to include the index,
+					// which is more consistent with other errors here.
+					throw new Error(`Note type '${note.type}' not found (for note at index ${i}).`);
+				}
+
+				// Validate required fields within note.fields
+				const modelFields = await this.ankiClient.getModelFieldNames(note.type);
+				for (const fieldName of modelFields) {
+					const providedFieldKey = Object.keys(note.fields).find(k => k.toLowerCase() === fieldName.toLowerCase());
+					if (providedFieldKey === undefined) {
+						throw new Error(`Invalid note at index ${i}: Missing required field '${fieldName}' for note type '${note.type}'.`);
+					}
+					// Check if the value of the field is a string
+					if (typeof note.fields[providedFieldKey] !== 'string') {
+						throw new Error(`Invalid note at index ${i}: Field '${fieldName}' for note type '${note.type}' must be a string. Received type ${typeof note.fields[providedFieldKey]}.`);
+					}
+				}
+				// **NEW VALIDATION ENDS HERE**
+
+				// Check if deck exists, create if not (moved after validation)
 				const decks = await this.ankiClient.getDeckNames();
 				if (!decks.includes(note.deck)) {
 					await this.ankiClient.createDeck(note.deck);
 				}
 
-				// Check if model exists
-				const models = await this.ankiClient.getModelNames();
-				if (!models.includes(note.type)) {
-					throw new Error(`Note type not found: ${note.type}`);
-				}
-
-				// Get model fields
-				const modelFields = await this.ankiClient.getModelFieldNames(note.type);
-
-				// Normalize field names to match the model
+				// Normalize field names to match the model (modelFields already fetched)
 				const normalizedFields: Record<string, string> = {};
-				for (const field of modelFields) {
-					normalizedFields[field] =
-						note.fields[field] || note.fields[field.toLowerCase()] || "";
+				for (const fieldName of modelFields) { // Iterate using modelFields to ensure correct casing
+					const providedFieldKey = Object.keys(note.fields).find(k => k.toLowerCase() === fieldName.toLowerCase());
+					// We've already validated that providedFieldKey is not undefined and its value is a string.
+					normalizedFields[fieldName] = note.fields[providedFieldKey!];
 				}
 
 				const noteId = await this.ankiClient.addNote({
@@ -756,9 +801,28 @@ export class McpToolHandler {
 					index: i,
 				});
 			} catch (error) {
+				let errorMessage = error instanceof Error ? error.message : String(error);
+				const currentNote = args.notes[i]; // Access the current note
+
+				if (currentNote && typeof currentNote.fields === 'object' && currentNote.fields !== null) {
+					let potentialEscapingIssue = false;
+					for (const fieldValue of Object.values(currentNote.fields)) {
+						if (typeof fieldValue === 'string') {
+							// Check for <, >, &, or single backslashes (not part of \\)
+							if (/[<>&]/.test(fieldValue) || /(?<!\\)\\(?!\\)/.test(fieldValue)) {
+								potentialEscapingIssue = true;
+								break;
+							}
+						}
+					}
+					if (potentialEscapingIssue) {
+						errorMessage += " Hint: If this error relates to a field with HTML/MathJax, ensure special characters are correctly escaped (e.g., use '&lt;' for '<', '&amp;' for '&', and ensure backslashes in MathJax are appropriate for JSON strings, often requiring double backslashes like '\\\\').";
+					}
+				}
+
 				results.push({
 					success: false,
-					error: error instanceof Error ? error.message : String(error),
+					error: errorMessage,
 					index: i,
 				});
 
